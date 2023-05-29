@@ -5,7 +5,7 @@ pipeline {
         APP_NAME = "gitops-arocd-app"
         IMAGE_TAG = "${BUILD_NUMBER}"
         IMAGE_NAME = "${DOCKERHUB_USERNAME}" + "/" + "${APP_NAME}"
-        REGISTRY_CRED = 'docker-cred'
+        REGISTRY_CREDS = 'dockerhub'
     }
     stages {
         stage ('Cleanup Workspace') {
@@ -30,6 +30,16 @@ pipeline {
                     docker_image = docker.build "${IMAGE_NAME}"
                 }
             }
-        } 
+        }
+        stage ('Push Docker image') {
+            steps {
+                script {
+                    docker.withRegistry('',REGISTRY_CREDS) {
+                        docker_image.Push("$BUILD_NUMBER")
+                        docker_image.Push('latest')
+                    }
+                }
+            }
+        }  
         }
     }
